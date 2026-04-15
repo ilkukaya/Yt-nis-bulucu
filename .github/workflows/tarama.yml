@@ -1,11 +1,9 @@
 name: "🔭 Niş Keşif"
 
 on:
-  # Her 6 saatte bir çalışır
   schedule:
-    - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: "0 */6 * * *"
 
-  # Manuel tetikleme
   workflow_dispatch:
     inputs:
       reason:
@@ -13,7 +11,6 @@ on:
         required: false
         default: "Manuel tarama"
 
-# Workflow'un repo'ya push yapabilmesi için
 permissions:
   contents: write
   pages: write
@@ -21,7 +18,7 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 45  # Max 45 dk
+    timeout-minutes: 45
 
     steps:
       - name: "📥 Repo checkout"
@@ -54,9 +51,9 @@ jobs:
           git config user.email "bot@guesslix.com"
           git add docs/ discoveries.json
           git diff --staged --quiet || git commit -m "🔭 Niş raporu — $(date +'%d.%m.%Y %H:%M')"
+          git pull --rebase origin main
           git push
 
-  # GitHub Pages deploy (ilk kez manuel etkinleştirme gerekir)
   deploy-pages:
     needs: scan
     runs-on: ubuntu-latest
@@ -69,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main  # Push sonrası güncel hali çek
+          ref: main
       - name: "📄 GitHub Pages konfigürasyon"
         uses: actions/configure-pages@v4
       - name: "📦 Pages artifact yükle"
