@@ -1,0 +1,81 @@
+name: "🔭 Niş Keşif"
+
+on:
+  # Her 6 saatte bir çalışır
+  schedule:
+    - cron: "0 */6 * * *"  # 00:00, 06:00, 12:00, 18:00 UTC
+
+  # Manuel tetikleme
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Tarama nedeni (opsiyonel)"
+        required: false
+        default: "Manuel tarama"
+
+# Workflow'un repo'ya push yapabilmesi için
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45  # Max 45 dk
+
+    steps:
+      - name: "📥 Repo checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🐍 Python kurulum"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: "📦 Bağımlılıklar"
+        run: pip install requests
+
+      - name: "🎯 Niş keşfi başlat"
+        env:
+          YT_API_KEYS: ${{ secrets.YT_API_KEYS }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER || 'smtp.gmail.com' }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
+          PAGES_URL: "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        run: python nis_tarama.py
+
+      - name: "📤 Raporları commit & push"
+        run: |
+          git config user.name "Niş Keşif Botu"
+          git config user.email "bot@guesslix.com"
+          git add docs/ discoveries.json
+          git diff --staged --quiet || git commit -m "🔭 Niş raporu — $(date +'%d.%m.%Y %H:%M')"
+          git push
+
+  # GitHub Pages deploy (ilk kez manuel etkinleştirme gerekir)
+  deploy-pages:
+    needs: scan
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main  # Push sonrası güncel hali çek
+      - name: "📄 GitHub Pages konfigürasyon"
+        uses: actions/configure-pages@v4
+      - name: "📦 Pages artifact yükle"
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - name: "🚀 Deploy"
+        id: deployment
+        uses: actions/deploy-pages@v4
