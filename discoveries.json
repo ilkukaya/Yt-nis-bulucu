@@ -1,12 +1,5 @@
 {
   "explored": [
-    "spot the difference",
-    "higher or lower",
-    "odd one out",
-    "fill in the blank",
-    "true or false quiz",
-    "which is bigger",
-    "larry king",
     "independence day",
     "ethan hawke",
     "script car",
@@ -499,8 +492,15 @@
     "innocence meets prejudice",
     "got superpowers",
     "meme",
-    "bro won cost"
+    "bro won cost",
+    "comparison video",
+    "general knowledge quiz",
+    "tier list ranking",
+    "never have i ever",
+    "did you know facts",
+    "guess the country",
+    "would you rather"
   ],
-  "run_count": 716,
-  "last_run": "2026-10-19T22:10:24.082727"
+  "run_count": 717,
+  "last_run": "2026-10-20T04:13:14.791612"
 }
